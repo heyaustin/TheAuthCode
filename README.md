@@ -77,6 +77,17 @@ The prototype focuses on validating the **technical feasibility** and **core gam
 
 **Out of scope for the prototype** (deferred to later milestones): Django backend, user accounts, persistent leaderboards, professor profiles with distinct policies, and multiplayer. The prototype is intentionally backend-free — everything runs in a single static HTML page.
 
+**How to practically assess the correctness of sincerity scoring?** Sincerity is inherently subjective, so "correctness" here means *agreement with human judgment*, not absolute truth. The plan is a small, reproducible benchmark with three components.
+
+*Test set.* Hand-curate around 60 short messages spanning five categories — clearly rude, lazy / one-liner, generic AI-generated email, well-crafted English request, and well-crafted Chinese request — with roughly 12 examples per category. Each message is independently labeled by 3 annotators (myself plus two classmates) on a 1–5 sincerity scale; the median becomes the ground-truth label. Inter-annotator agreement is tracked via Krippendorff's α, and any item with α below 0.5 is dropped or relabeled.
+
+*Metrics.* Three numbers, each easy to compute from a CSV of model outputs vs. labels:
+1. **Spearman rank correlation** between the system's 0–100 score and the median human label — captures whether the *ordering* is right, which matters more than absolute calibration for a game.
+2. **Verdict accuracy** — collapse human labels into grant (≥4) / deny (≤2) / borderline and compute a 3-class accuracy and confusion matrix against the system's own three-tier verdict.
+3. **Category breakdown** — mean score per category, expected to monotonically rise from "rude" → "well-crafted." A failure here flags a specific bug (e.g., the Chinese category lagging confirms the known English-only model gap).
+
+*Pass criteria.* The prototype is considered "correct enough to ship" when Spearman ρ ≥ 0.6, verdict accuracy ≥ 70%, and the category means are strictly monotonic. Anything below that triggers a tuning pass on heuristic weights or, more likely, motivates the fine-tuning step in the next-step plan.
+
 ### Relevance to the Course DSAP (與課程的關聯)
 <!-- 你的專題可能涉及哪些資料結構或演算法概念？為什麼？ -->
 

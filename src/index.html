@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="apple-touch-icon" sizes="57x57" href="favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+  <link rel="manifest" href="favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <title>TheAuthCode</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;700;900&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Subtle paper-grain background -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="masthead__brand">
+      <span class="masthead__seal" aria-hidden="true">
+        <!-- A miniature "official seal" inline SVG -->
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2" />
+          <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="1" />
+          <text x="32" y="38" text-anchor="middle" font-family="Noto Serif TC" font-size="18" font-weight="700"
+            fill="currentColor">授</text>
+        </svg>
+      </span>
+      <div class="masthead__titles">
+        <h1 class="masthead__title">TheAuthCode</h1>
+        <p class="masthead__subtitle">授權碼大於一切 · Can You Convince the Professor?</p>
+      </div>
+    </div>
+    <div class="masthead__meta">
+      <span id="modelStatus" class="status status--loading">
+        <span class="status__dot"></span>
+        <span class="status__label">Initializing…</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- LEFT: Professor card -->
+    <section class="professor" aria-label="The professor">
+      <div class="professor__frame">
+        <div class="professor__portrait" id="professorPortrait">
+          <!-- A stylized professor avatar -->
+          <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- background swatch -->
+            <rect x="0" y="0" width="200" height="220" fill="var(--ink-paper)" />
+            <!-- shoulders / robe -->
+            <path d="M 20 220 Q 20 150 60 140 L 140 140 Q 180 150 180 220 Z" fill="var(--ink-deep)" opacity="0.92" />
+            <!-- collar -->
+            <path d="M 78 140 L 100 170 L 122 140 Z" fill="var(--ink-paper)" />
+            <!-- head -->
+            <ellipse cx="100" cy="95" rx="42" ry="48" fill="var(--ink-skin)" />
+            <!-- hair -->
+            <path
+              d="M 60 80 Q 70 45 100 42 Q 130 45 140 80 Q 138 65 130 60 Q 115 58 100 60 Q 85 58 70 60 Q 62 65 60 80 Z"
+              fill="var(--ink-deep)" />
+            <!-- glasses -->
+            <circle cx="85" cy="95" r="11" fill="none" stroke="var(--ink-deep)" stroke-width="2.5" />
+            <circle cx="115" cy="95" r="11" fill="none" stroke="var(--ink-deep)" stroke-width="2.5" />
+            <line x1="96" y1="95" x2="104" y2="95" stroke="var(--ink-deep)" stroke-width="2" />
+            <!-- mouth (this is the part we mutate) -->
+            <path id="professorMouth" d="M 88 122 Q 100 126 112 122" fill="none" stroke="var(--ink-deep)"
+              stroke-width="2.5" stroke-linecap="round" />
+            <!-- pen in pocket -->
+            <rect x="148" y="170" width="3" height="22" fill="var(--gold)" />
+            <rect x="146" y="168" width="7" height="6" fill="var(--ink-deep)" />
+          </svg>
+        </div>
+        <div class="professor__nameplate">
+          <div class="professor__name">Prof. <span id="professorName">林教授</span></div>
+          <div class="professor__dept">Department of Computer Science · 資訊工程學系</div>
+        </div>
+      </div>
+      <blockquote class="professor__quote" id="professorQuote">
+        "I have read many requests this week. Convince me yours is sincere."
+      </blockquote>
+    </section>
+
+    <!-- RIGHT: Letter / message panel -->
+    <section class="letter" aria-label="Your message">
+      <div class="letter__paper">
+        <div class="letter__header">
+          <span class="letter__subject">Subject:</span>
+          <span class="letter__subject-text">Request for Authorization Code · 授權碼申請</span>
+        </div>
+
+        <label for="messageInput" class="letter__label">Compose your message · 撰寫你的請求</label>
+        <textarea id="messageInput" class="letter__input" rows="9"
+          placeholder="Dear Professor Lin,&#10;&#10;I am writing to respectfully request..."
+          maxlength="2000"></textarea>
+
+        <div class="letter__footer">
+          <span class="letter__counter">
+            <span id="charCount">0</span> / 2000 characters
+          </span>
+          <button id="submitBtn" class="btn btn--primary" type="button">
+            <span class="btn__label">Send to Professor</span>
+            <span class="btn__icon" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading bar shown while the model downloads -->
+      <div id="loadingBar" class="loading" hidden>
+        <div class="loading__track">
+          <div class="loading__fill" id="loadingFill"></div>
+        </div>
+        <div class="loading__text" id="loadingText">Downloading model…</div>
+      </div>
+
+      <!-- Fallback notice -->
+      <div id="fallbackNotice" class="notice" hidden>
+        <strong>Heuristic mode:</strong> the ML model could not be loaded, so a simpler scoring algorithm is being used.
+        Verdicts will still work, but they're less nuanced.
+      </div>
+    </section>
+  </main>
+
+  <!-- Verdict modal -->
+  <div id="verdict" class="verdict" hidden aria-hidden="true">
+    <div class="verdict__backdrop" id="verdictBackdrop"></div>
+    <div class="verdict__panel" role="dialog" aria-modal="true" aria-labelledby="verdictTitle">
+      <button class="verdict__close" id="verdictClose" aria-label="Close">×</button>
+
+      <!-- GRANTED state -->
+      <div class="verdict__granted" id="verdictGranted" hidden>
+        <div class="card">
+          <div class="card__corner card__corner--tl"></div>
+          <div class="card__corner card__corner--tr"></div>
+          <div class="card__corner card__corner--bl"></div>
+          <div class="card__corner card__corner--br"></div>
+          <div class="card__header">
+            <span class="card__seal">授</span>
+            <span class="card__title">Authorization Code · 授權碼</span>
+          </div>
+          <div class="card__code" id="grantedCode">XXXX-XXXX</div>
+          <div class="card__meta">
+            <div><span class="card__label">Course</span> Data Structures &amp; Algorithms</div>
+            <div><span class="card__label">Issued by</span> <span id="grantedProf">林教授</span></div>
+            <div><span class="card__label">Score</span> <span id="grantedScore">—</span> / 100</div>
+          </div>
+          <div class="card__stamp" aria-hidden="true">GRANTED</div>
+        </div>
+        <p class="verdict__msg" id="verdictMsgGranted">The professor has granted your request.</p>
+      </div>
+
+      <!-- DENIED state -->
+      <div class="verdict__denied" id="verdictDenied" hidden>
+        <h2 id="verdictTitle" class="verdict__title">Request Denied</h2>
+        <p class="verdict__score">
+          Sincerity score: <strong><span id="deniedScore">—</span></strong> / 100
+        </p>
+        <ul class="verdict__feedback" id="verdictFeedback"></ul>
+        <p class="verdict__msg" id="verdictMsgDenied">"I'm afraid I cannot offer you a code at this time."</p>
+      </div>
+
+      <div class="verdict__actions">
+        <button id="retryBtn" class="btn btn--secondary" type="button">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="colophon">
+    <span>TheAuthCode · DSAP Final Project · Prototype</span>
+    <span class="colophon__sep">·</span>
+    <span>Inference: <code>onnxruntime-web</code> in your browser</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>

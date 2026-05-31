@@ -173,11 +173,85 @@ A minor but annoying issue — Safari's auto dark-mode rendered some colored gra
 
 ## Final Report
 
-### 專案說明
+### Overview (專案說明)
 <!-- 完整描述你的專案做了什麼 -->
 
-### 使用方式
+**TheAuthCode** is a single-page, bilingual (English / 繁體中文) web game that turns a familiar Taiwanese university ritual — writing to a professor for a course **authorization code (授權碼)** — into a short, replayable persuasion-writing loop. The user composes a letter to a virtual professor; the app scores its *sincerity* on a 0–100 scale and returns a verdict; a high enough score reveals an animated authorization-code card, and anything lower comes back with specific, actionable critique. Everything that decides the outcome runs in the user's own browser, so the server's only jobs are serving three static files and (optionally) recording leaderboard entries.
+
+The final build advances the prototype on five fronts.
+
+**1. Multilingual in-browser inference.** The prototype loaded an English-only model (`Xenova/distilbert-base-uncased-finetuned-sst-2-english`) through raw `onnxruntime-web`, paired with a hand-written WordPiece tokenizer. That tokenizer could not segment Chinese, so Chinese letters silently fell back to the heuristic scorer — the single biggest correctness gap identified in the prototype. The final version loads a genuinely multilingual model, `Xenova/distilbert-base-multilingual-cased-sentiments-student`, through **Transformers.js**, which ships the model's *own* tokenizer. Chinese and English are now both tokenized correctly by the same pipeline. The honest tradeoff is size: a multilingual vocabulary is larger than an English-only one, so the weights are heavier than the old model rather than smaller. This is mitigated by loading quantized (q8) weights, by the browser caching the model after the first visit so repeat loads are instant, and by keeping the heuristic scorer usable immediately while the model downloads in the background (with a progress bar and a timeout that falls back to heuristic mode on a slow or blocked network).
+
+**2. Sincerity scoring with a length penalty.** The score blends the model's positivity (positive × 1.0 + neutral × 0.5 + negative × 0.0) with a lightweight heuristic over courtesy phrases, substantive reasons, salutation/sign-off, and dismissive language — both English and Chinese lexicons. On top of this, letters shorter than 50 words now take a **moderate linear penalty** that scales with how short they are (up to 35 points removed for a near-empty letter, fading smoothly to zero at 50 words). Word counting is bilingual: each CJK character counts as one word, while non-CJK text is counted by whitespace-separated tokens, so a short Chinese letter is no longer mistaken for a long one.
+
+**3. Three professor personas.** A segmented control switches between three professors entirely **in place — no page navigation or URL change**, swapping only the on-screen text and a per-professor accent colour:
+
+| Professor | Style | Course | Scoring |
+|-----------|-------|--------|---------|
+| 尤林慧 | 嚴格 · Strict | 會計學原理 | model + heuristic, **high** hidden threshold |
+| 沈俊顏 | 寬鬆 · Easygoing | 高等危機分 | model + heuristic, **lenient** hidden threshold |
+| 黃卡恩 | 看運氣 · By luck | 初等演算法設計與分析 | **pure random** 0–100, ignores the letter |
+
+Each non-lottery professor's grant threshold is a deliberately **hidden** number — only the style label (Strict / Easygoing) is shown, never the cutoff. 黃卡恩 ignores the letter entirely and returns a uniform random verdict; this is hinted at, not stated outright, through the "看運氣 · By luck" tag and his quote about leaving every score to the dice.
+
+**4. Per-professor leaderboards, opt-in, no login.** After a verdict, the modal offers the user a choice: enter a nickname, decide whether to attach the letter they wrote, and submit. A submission records the chosen nickname, the score, the grant/deny result, the issued code (when granted), and the letter text (only if the user opted in). Three buttons on the main page open each professor's board in a dialog — again without leaving the page — and each board is ranked by score, highest first; after submitting, the user is told their rank and offered a jump straight to that board.
+
+**5. A Python backend.** A single-file **Django + SQLite** service exposes `GET /api/leaderboard/<persona>/` and `POST /api/submit/`, validating and clamping input server-side and returning each board already sorted. It can also serve the three frontend files, so the whole project can run from one origin; a permissive CORS layer keeps it working when the frontend is served separately during development. The game itself remains fully playable with the backend offline — only the leaderboards depend on it.
+
+The visual design keeps the prototype's academic-letterpress aesthetic (warm paper, gold and crimson accents, a wax-seal "GRANTED" stamp) and its responsive, mobile-first layout and graceful degradation.
+
+#### Performance analysis: ranking the leaderboard (comparison sort vs. counting sort)
+<!-- 至少提出系統內一個功能流程是使用不同資料結構或演算法來進行實際效能分析跟比較 -->
+
+One functional process — **producing a professor's leaderboard ranked by score** — was implemented and analysed under two different algorithms, with real measurements.
+
+**The task.** When a user opens a board (or submits a new attempt), the entries must be returned sorted by score in descending order, with ties broken by submission time (earlier submission ranks higher). The shipped code does this two ways in two places: the SQLite backend returns rows through its indexed `ORDER BY`, and the browser keeps a defensive **comparison sort** (`Array.prototype.sort` with a comparator) over whatever it receives. The analysis below compares that comparison sort against a **counting sort** specialised to this data.
+
+**Why a second algorithm is even possible.** A general comparison sort runs in **O(n log n)** and, in JavaScript, pays for *n log n* comparator callbacks. But the sort key here has a property worth exploiting: the score is an integer that the app **clamps to the range [0, 100]** — only 101 distinct values. That bounded key range is exactly the precondition for **counting sort**, which runs in **O(n + K)** with K = 101, i.e. linear in the number of entries. The one subtlety is the tie-break: counting sort must be **stable** so that equal scores keep their submission order. Feeding entries to it in submission (creation) order makes a stable counting sort reproduce the same `(–score, created)` ordering the comparator produces — verified to be byte-for-byte identical up to 100,000 entries.
+
+**Method.** Both algorithms were implemented in JavaScript and run under Node (the same runtime the in-browser sort uses). Each leaderboard entry was a `{score ∈ [0,100], created, id}` object with random scores; for each size the timed region ran many repetitions, taking the median of 12 batches, and every result was consumed by a running sink to stop the JIT from optimising the work away.
+
+**Results** (per-call median, lower is better):
+
+| Entries (n) | Comparison sort (ms) | Counting sort (ms) | Speed-up |
+|------------:|---------------------:|-------------------:|---------:|
+| 100         | 0.009                | 0.002              | ~4×  |
+| 1,000       | 0.17                 | 0.006              | ~29× |
+| 10,000      | 2.15                 | 0.047              | ~46× |
+| 100,000     | 24.4                 | 0.99               | ~25× |
+| 1,000,000   | 288.4                | 19.1               | ~15× |
+
+**Interpretation.** The measurements track the Big-O predictions closely. From 100 to 1,000,000 entries (10,000× more data), the comparison sort's time grows roughly 34,000× — the extra factor over 10,000× being the log *n* term — while the counting sort grows about 10,000×, i.e. linearly. Across the whole practical range the counting sort is one to two orders of magnitude faster (its edge peaks in the mid-range, where the comparator-callback cost hurts the comparison sort most, and narrows at a million entries as allocating the output array starts to dominate).
+
+**Conclusion and tradeoff.** At the prototype's realistic scale — tens to a few thousand entries per professor — *both* algorithms finish in well under a millisecond, so this is not a current bottleneck and the simpler comparison sort is perfectly adequate. The value of the analysis is in the headroom it reveals: counting sort keeps a board effectively instant even at 10⁵–10⁶ entries, which directly serves the project's "promote peer friendship through leaderboards (促進同儕友誼)" goal should usage grow. The cost is generality — counting sort is tied to the bounded integer key, and if scores ever became unbounded or floating-point we would have to revert to the comparison sort. That is the concrete lesson: by reading a real property of the data (a score confined to 101 buckets), we can replace an O(n log n) algorithm with an O(n) one for the same result.
+
+### How to Use (使用方式)
 <!-- 如何編譯、執行、使用你的程式 -->
 
-### 與課程的關聯總結
-<!-- 總結你的專題與進階程式設計及資料結構課程之間的關聯 -->
+The project is plain HTML / CSS / JavaScript with no build step. Four files matter: `index.html`, `style.css`, `app.js` (the frontend) and `backend.py` (the optional leaderboard server).
+
+**Option A — play without leaderboards.** Because the page uses an ES module and fetches the model from a CDN, it needs to be served over HTTP rather than opened from `file://`. From the project folder run a static server and open the printed address:
+
+```bash
+python -m http.server 8080      # then visit http://localhost:8080
+```
+
+The first visit downloads the model once (the heuristic scorer works while it loads, and the browser caches the model for next time). The 🏆 leaderboard buttons will report that the server is unreachable, which is expected in this mode — everything else works.
+
+**Option B — full experience with leaderboards (recommended).** Let Django serve both the frontend and the API from one origin:
+
+```bash
+pip install "django>=4.2"
+python backend.py runserver 0.0.0.0:8000   # then visit http://localhost:8000
+```
+
+The SQLite database and its table are created automatically on first launch; submitting and viewing leaderboards then works with no further setup. If you instead serve the frontend from a *different* origin (e.g. a separate static host), edit the single `API_BASE` constant at the top of `app.js` to point at the running backend. To sanity-check the backend logic on its own, run `python backend.py selftest`.
+
+**How to play.**
+1. Pick a professor with the control at the top — 尤林慧 (strict), 沈俊顏 (easygoing), or 黃卡恩 (luck). The page recolours and the course changes; you stay on the same screen.
+2. Write your letter in the text area, in English or Chinese (or both), then press **Send to Professor** (or **Ctrl / Cmd + Enter**).
+3. Read the verdict. A grant reveals an authorization-code card; a denial gives targeted feedback on length, courtesy, salutation, and substance.
+4. *(Optional)* In the verdict dialog, enter a nickname, choose whether to attach your letter, and submit your attempt to that professor's leaderboard. You'll see your rank and can open the board directly.
+5. Open any professor's board anytime with the 🏆 buttons. Press **Esc** to close a dialog.
+
+**Notes.** Each professor's grant threshold is hidden by design, and 黃卡恩's verdict is pure luck regardless of what you write. The app stays playable in heuristic mode if the model can't load. For deployment, the static frontend plus the lightweight Django API are a comfortable fit for the Oracle Cloud free-tier VM described in the proposal, since all ML inference happens on each visitor's device.

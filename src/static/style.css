@@ -30,6 +30,22 @@
   --max-w: 1180px;
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --radius: 6px;
+
+  /* per-professor accent (overridden on <body data-persona>) */
+  --accent: var(--crimson);
+}
+
+/* Each professor recolors the page without any navigation. */
+body[data-persona="strict"] {
+  --accent: var(--crimson);
+}
+
+body[data-persona="easygoing"] {
+  --accent: var(--moss);
+}
+
+body[data-persona="lottery"] {
+  --accent: var(--gold);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -249,12 +265,14 @@ body {
 .professor__frame {
   background: var(--ink-paper);
   border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
   padding: 1rem;
   box-shadow:
     0 1px 0 rgba(0, 0, 0, 0.04),
     0 12px 30px -16px rgba(0, 0, 0, 0.18);
   /* a tiny rotation for character */
   transform: rotate(-0.6deg);
+  transition: border-top-color 0.3s ease;
 }
 
 .professor__portrait {
@@ -327,8 +345,9 @@ body {
   line-height: 1.45;
   color: var(--ink-mid);
   padding: 0.5rem 0 0 1rem;
-  border-left: 2px solid var(--gold);
+  border-left: 2px solid var(--accent);
   position: relative;
+  transition: border-left-color 0.3s ease;
 }
 
 /* ================================================
@@ -863,6 +882,511 @@ body {
   padding: 0.05em 0.35em;
   border-radius: 3px;
   border: 1px solid var(--line);
+}
+
+/* ================================================
+   Control bar — professor picker + leaderboard launchers
+   ================================================ */
+.controlbar {
+  position: relative;
+  z-index: 2;
+  max-width: var(--max-w);
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.9rem var(--gutter) 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.control-group--right {
+  align-items: flex-end;
+}
+
+.control-group__label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* segmented professor tabs */
+.persona-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.3rem;
+  background: var(--paper-edge);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.persona-tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.4rem 0.95rem;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink-mid);
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
+  line-height: 1.15;
+}
+
+.persona-tab:hover:not(.is-active) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  .persona-tab:hover:not(.is-active) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.persona-tab.is-active {
+  background: var(--ink-paper);
+  border-color: var(--accent);
+  box-shadow: 0 1px 6px -2px rgba(0, 0, 0, 0.25);
+}
+
+.persona-tab__name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ink-deep);
+}
+
+.persona-tab.is-active .persona-tab__name {
+  color: var(--accent);
+}
+
+.persona-tab__tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* leaderboard launch buttons */
+.lb-launch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.lb-launch__btn {
+  font-family: var(--body);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s, transform 0.12s;
+}
+
+.lb-launch__btn:hover {
+  border-color: var(--accent);
+  color: var(--ink-deep);
+  transform: translateY(-1px);
+}
+
+/* ================================================
+   Professor nameplate additions (style badge + course)
+   ================================================ */
+.professor__style {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  padding: 0.12rem 0.7rem;
+  background: var(--accent);
+  color: var(--ink-paper);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  transition: background 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .professor__style {
+    color: #1a1612;
+  }
+}
+
+.professor__course {
+  margin-top: 0.5rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--ink-deep);
+}
+
+.professor__course-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.1rem;
+}
+
+/* ================================================
+   Small button modifier
+   ================================================ */
+.btn--sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+/* ================================================
+   Opt-in leaderboard submission (inside verdict modal)
+   ================================================ */
+.submit {
+  margin-top: 1.4rem;
+}
+
+.submit__divider {
+  height: 1px;
+  background: var(--line);
+  margin-bottom: 1rem;
+}
+
+.submit__prompt {
+  margin: 0 0 0.75rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--ink-mid);
+}
+
+.submit__prompt strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.submit__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.submit__input {
+  flex: 1 1 180px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.4);
+  font-family: var(--body);
+  font-size: 0.95rem;
+  color: var(--ink-deep);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  .submit__input {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.submit__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(176, 133, 55, 0.15);
+}
+
+.submit__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.submit__check input {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.submit__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.submit__status {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.submit__status[data-state="ok"] {
+  color: var(--moss);
+}
+
+.submit__status[data-state="error"] {
+  color: var(--crimson);
+}
+
+/* ================================================
+   Leaderboard modal (reuses the verdict modal pattern)
+   ================================================ */
+.lb {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.lb[hidden] {
+  display: none;
+}
+
+.lb__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 26, 23, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease-out;
+}
+
+.lb__panel {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--accent);
+  padding: clamp(1.4rem, 4vw, 2.2rem);
+  max-width: 600px;
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+  animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lb__head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.lb__seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: var(--accent);
+  color: var(--ink-paper);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lb__seal {
+    color: #1a1612;
+  }
+}
+
+.lb__title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink-deep);
+  line-height: 1.1;
+}
+
+.lb__sub {
+  margin: 0.1rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.lb__body {
+  overflow-y: auto;
+  margin: 0.5rem 0;
+  flex: 1;
+}
+
+/* one row per ranked entry */
+.lb__row {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto;
+  grid-template-areas:
+    "rank nick score"
+    "rank meta meta"
+    "letter letter letter";
+  align-items: center;
+  gap: 0.15rem 0.7rem;
+  padding: 0.7rem 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.lb__row:first-child {
+  border-top: none;
+}
+
+.lb__rank {
+  grid-area: rank;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.lb__row--top .lb__rank {
+  color: var(--accent);
+}
+
+.lb__nick {
+  grid-area: nick;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--ink-deep);
+  word-break: break-word;
+}
+
+.lb__score {
+  grid-area: score;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink-deep);
+  white-space: nowrap;
+}
+
+.lb__meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.lb__badge {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.lb__badge--granted {
+  color: var(--moss);
+}
+
+.lb__badge--denied {
+  color: var(--ink-soft);
+}
+
+.lb__code {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.lb__letter {
+  grid-area: letter;
+  margin: 0.35rem 0 0;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ink-mid);
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--line);
+  /* clamp long letters to a preview */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lb__empty,
+.lb__error,
+.lb__loading {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.lb__error {
+  color: var(--crimson);
+}
+
+.lb__error code {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.82rem;
+  background: var(--paper-edge);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+
+.lb__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 0.9rem;
+  margin-top: 0.3rem;
+  border-top: 1px solid var(--line);
+}
+
+.lb__hint {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-soft);
 }
 
 /* ================================================

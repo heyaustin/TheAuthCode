@@ -8,26 +8,26 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <link rel="apple-touch-icon" sizes="57x57" href="favicon/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="favicon/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="favicon/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="favicon/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="favicon/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="favicon/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="favicon/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="favicon/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="favicon/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
-  <link rel="manifest" href="favicon/manifest.json">
+  <link rel="apple-touch-icon" sizes="57x57" href="static/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="static/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="static/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="static/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="static/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="static/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="static/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="static/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="static/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="static/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="static/favicon/favicon-16x16.png">
+  <link rel="manifest" href="static/favicon/manifest.json">
   <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="favicon/ms-icon-144x144.png">
+  <meta name="msapplication-TileImage" content="static/favicon/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
 
   <title>TheAuthCode</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="static/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -35,7 +35,7 @@
     rel="stylesheet" />
 </head>
 
-<body>
+<body data-persona="strict">
   <!-- Subtle paper-grain background -->
   <div class="grain" aria-hidden="true"></div>
 
@@ -63,6 +63,36 @@
     </div>
   </header>
 
+  <!-- Control bar: choose a professor (left) + open a leaderboard (right). -->
+  <nav class="controlbar" aria-label="Professor selection and leaderboards">
+    <div class="control-group">
+      <span class="control-group__label">選擇教授 · Choose your professor</span>
+      <div class="persona-tabs" role="tablist" id="personaTabs">
+        <button class="persona-tab is-active" type="button" role="tab" aria-selected="true" data-persona="strict">
+          <span class="persona-tab__name">尤林慧</span>
+          <span class="persona-tab__tag">嚴格 · Strict</span>
+        </button>
+        <button class="persona-tab" type="button" role="tab" aria-selected="false" data-persona="easygoing">
+          <span class="persona-tab__name">沈俊顏</span>
+          <span class="persona-tab__tag">寬鬆 · Easygoing</span>
+        </button>
+        <button class="persona-tab" type="button" role="tab" aria-selected="false" data-persona="lottery">
+          <span class="persona-tab__name">黃卡恩</span>
+          <span class="persona-tab__tag">看運氣 · By luck</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="control-group control-group--right">
+      <span class="control-group__label">排行榜 · Leaderboards</span>
+      <div class="lb-launch" id="lbLaunch">
+        <button class="lb-launch__btn" type="button" data-persona="strict">🏆 尤林慧</button>
+        <button class="lb-launch__btn" type="button" data-persona="easygoing">🏆 沈俊顏</button>
+        <button class="lb-launch__btn" type="button" data-persona="lottery">🏆 黃卡恩</button>
+      </div>
+    </div>
+  </nav>
+
   <main class="stage">
     <!-- LEFT: Professor card -->
     <section class="professor" aria-label="The professor">
@@ -74,8 +104,9 @@
             <rect x="0" y="0" width="200" height="220" fill="var(--ink-paper)" />
             <!-- shoulders / robe -->
             <path d="M 20 220 Q 20 150 60 140 L 140 140 Q 180 150 180 220 Z" fill="var(--ink-deep)" opacity="0.92" />
-            <!-- collar -->
+            <!-- collar / sash (tinted per professor) -->
             <path d="M 78 140 L 100 170 L 122 140 Z" fill="var(--ink-paper)" />
+            <path d="M 60 142 L 70 200 L 78 200 L 72 140 Z" fill="var(--accent)" opacity="0.85" />
             <!-- head -->
             <ellipse cx="100" cy="95" rx="42" ry="48" fill="var(--ink-skin)" />
             <!-- hair -->
@@ -95,8 +126,13 @@
           </svg>
         </div>
         <div class="professor__nameplate">
-          <div class="professor__name">Prof. <span id="professorName">林教授</span></div>
-          <div class="professor__dept">Department of Computer Science · 資訊工程學系</div>
+          <div class="professor__style" id="professorStyle">嚴格 · Strict</div>
+          <div class="professor__name">Prof. <span id="professorName">尤林慧</span></div>
+          <div class="professor__dept" id="professorDept">資訊管理學系 · Dept. of Information Management</div>
+          <div class="professor__course">
+            <span class="professor__course-label">課程 · Course</span>
+            <span id="professorCourse">會計學原理</span>
+          </div>
         </div>
       </div>
       <blockquote class="professor__quote" id="professorQuote">
@@ -114,12 +150,12 @@
 
         <label for="messageInput" class="letter__label">Compose your message · 撰寫你的請求</label>
         <textarea id="messageInput" class="letter__input" rows="9"
-          placeholder="Dear Professor Lin,&#10;&#10;I am writing to respectfully request..."
+          placeholder="敬愛的教授您好：&#10;&#10;我是…，懇請您…&#10;&#10;Dear Professor,&#10;&#10;I am writing to respectfully request..."
           maxlength="2000"></textarea>
 
         <div class="letter__footer">
           <span class="letter__counter">
-            <span id="charCount">0</span> / 2000 characters
+            <span id="wordCount">0</span> words · <span id="charCount">0</span> / 2000 chars
           </span>
           <button id="submitBtn" class="btn btn--primary" type="button">
             <span class="btn__label">Send to Professor</span>
@@ -163,8 +199,8 @@
           </div>
           <div class="card__code" id="grantedCode">XXXX-XXXX</div>
           <div class="card__meta">
-            <div><span class="card__label">Course</span> Data Structures &amp; Algorithms</div>
-            <div><span class="card__label">Issued by</span> <span id="grantedProf">林教授</span></div>
+            <div><span class="card__label">Course</span> <span id="grantedCourse">會計學原理</span></div>
+            <div><span class="card__label">Issued by</span> <span id="grantedProf">尤林慧</span></div>
             <div><span class="card__label">Score</span> <span id="grantedScore">—</span> / 100</div>
           </div>
           <div class="card__stamp" aria-hidden="true">GRANTED</div>
@@ -182,8 +218,50 @@
         <p class="verdict__msg" id="verdictMsgDenied">"I'm afraid I cannot offer you a code at this time."</p>
       </div>
 
+      <!-- Opt-in leaderboard submission -->
+      <div class="submit" id="submitBox">
+        <div class="submit__divider"></div>
+        <p class="submit__prompt">
+          想上榜嗎？ · Add this attempt to <strong id="submitProf">尤林慧</strong>'s leaderboard?
+        </p>
+        <div class="submit__row">
+          <input id="nicknameInput" class="submit__input" type="text" maxlength="24"
+            placeholder="暱稱 · Nickname" autocomplete="off" />
+          <label class="submit__check">
+            <input id="includeLetter" type="checkbox" checked />
+            <span>附上信件內容 · include my letter</span>
+          </label>
+        </div>
+        <div class="submit__actions">
+          <button id="submitLeaderboardBtn" class="btn btn--secondary btn--sm" type="button">
+            送出到排行榜 · Submit
+          </button>
+          <span id="submitStatus" class="submit__status" aria-live="polite"></span>
+        </div>
+      </div>
+
       <div class="verdict__actions">
         <button id="retryBtn" class="btn btn--secondary" type="button">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard modal (one per professor, opened in-place) -->
+  <div id="leaderboard" class="lb" hidden aria-hidden="true">
+    <div class="lb__backdrop" id="lbBackdrop"></div>
+    <div class="lb__panel" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+      <button class="verdict__close" id="lbClose" aria-label="Close">×</button>
+      <div class="lb__head">
+        <span class="lb__seal" id="lbSeal">授</span>
+        <div class="lb__head-text">
+          <h2 class="lb__title" id="lbTitle">Leaderboard</h2>
+          <p class="lb__sub" id="lbSub">—</p>
+        </div>
+      </div>
+      <div class="lb__body" id="lbBody"></div>
+      <div class="lb__foot">
+        <span class="lb__hint" id="lbHint">Sorted by score, highest first.</span>
+        <button id="lbRefresh" class="btn btn--secondary btn--sm" type="button">↻ Refresh</button>
       </div>
     </div>
   </div>
@@ -191,10 +269,10 @@
   <footer class="colophon">
     <span>TheAuthCode · DSAP Final Project · Prototype</span>
     <span class="colophon__sep">·</span>
-    <span>Inference: <code>onnxruntime-web</code> in your browser</span>
+    <span>Inference: <code>Transformers.js</code> (multilingual DistilBERT) in your browser</span>
   </footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="static/app.js"></script>
 </body>
 
 </html>
